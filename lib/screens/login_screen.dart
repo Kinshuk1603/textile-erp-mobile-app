@@ -1,35 +1,10 @@
 import 'package:flutter/material.dart';
 import 'signup_screen.dart';
 import '../widgets/logo_widget.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'home_page.dart'; // Add this import
 
-class User {
-  final String email;
-  final String password;
-
-  User({required this.email, required this.password});
-}
-
-class ApiService {
-  Future<void> login(User user) async {
-    final url = 'https://your-api-url.com/login'; // Replace with your API endpoint
-    final response = await http.post(
-      Uri.parse(url),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'email': user.email,
-        'password': user.password,
-      }),
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to log in');
-    }
-  }
-}
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -43,8 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _emailError;
   List<String> _passwordErrors = [];
   bool _formSubmitted = false;
-  bool _isPasswordVisible = false; 
-  final ApiService _apiService = ApiService();
+  bool _isPasswordVisible = false;
 
   void _showSuccessDialog(String message) {
     showDialog(
@@ -89,7 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
   void _validateEmailField(String? value) {
     if (value == null || value.isEmpty) {
       _emailError = 'Please enter your email';
-    } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
+    } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        .hasMatch(value)) {
       _emailError = 'Invalid email format';
     } else {
       _emailError = null;
@@ -121,27 +96,53 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _login() async {
-    setState(() {
-      _formSubmitted = true;
-      _validateEmailField(_emailController.text);
-      _validatePasswordField(_passwordController.text);
-    });
+      print('Attempting to log in...'); // Debug statement
+  setState(() {
+    _formSubmitted = true;
+    _validateEmailField(_emailController.text);
+    _validatePasswordField(_passwordController.text);
+  });
 
-    if (_emailError == null && _passwordErrors.isEmpty) {
-      final user = User(
-        email: _emailController.text,
-        password: _passwordController.text,
+  if (_emailError == null && _passwordErrors.isEmpty) {
+     print('Credentials are valid. Sending request...'); // Debug statemen
+    try {
+      // Prepare your login request
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:5000/api/auth/login'), // Update with your API endpoint
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailController.text,
+          'password': _passwordController.text,
+        }),
       );
 
-      try {
-        await _apiService.login(user);
+      print('Response status: ${response.statusCode}'); // Debug statement
+      print('Response body: ${response.body}'); // Debug statement
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+          // Clear the fields
+        _emailController.clear();
+        _passwordController.clear();
+
+        // Navigate to the Home page
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()), // Navigate to HomePage
+        );
         _showSuccessDialog('Login successful! You are signed in.');
-      } catch (error) {
-        print('Login Error: $error');
-        _showErrorDialog('Login failed. Please try again.');
+        print('Login successful with ${response.statusCode}'); // Debug statement        
+      } else {
+       print('Login failed with status: ${response.statusCode}'); // Debug statemen
+        _showErrorDialog('Login failed. Please check your credentials and try again.');
       }
+    } catch (error) {
+      print('Login Error: $error');
+      _showErrorDialog('An error occurred. Please try again.');
     }
+  } else {
+    print('Email or password validation failed.'); // Debug statement
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +216,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       prefixIcon: Icon(Icons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
                         ),
                         onPressed: () {
                           setState(() {
@@ -247,7 +250,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _login,
                     child: Text('Login'),
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
                     ),
@@ -260,7 +264,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (context) => SignUpScreen()),
+                            MaterialPageRoute(
+                                builder: (context) => SignUpScreen()),
                           );
                         },
                         child: Text('Sign Up'),

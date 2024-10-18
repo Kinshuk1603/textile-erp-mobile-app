@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
+// import 'server_connection_screen.dart'; // Import the new screen
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: LoginScreen(), // Set LoginScreen as the initial screen
+        // home: const ServerConnectionScreen(), // Set the new screen as the home
     );
   }
 }

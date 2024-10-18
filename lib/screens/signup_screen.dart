@@ -65,7 +65,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (_usernameError == null &&
         _emailError == null &&
         _passwordErrors.isEmpty) {
-      final newUser = models.User(
+      final user = models.User(
         // Use the prefixed class
         username: _usernameController.text,
         email: _emailController.text,
@@ -75,8 +75,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       try {
         print(
-            'Signing up user: ${newUser.username}, ${newUser.email}, ${newUser.role}');
-        await _apiService.signUp(newUser);
+            'Signing up user: ${user.username}, ${user.email}, ${user.role}');
+        await _apiService.signUp(user);
+        print("aa gya hai yha tk");
         // Handle successful signup, e.g., navigate to the login screen
         // Show success dialog before navigating to the login screen
         _showSuccessDialog('Signup successful! You are signed in.');
